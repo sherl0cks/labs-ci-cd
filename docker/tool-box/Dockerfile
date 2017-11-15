@@ -15,8 +15,6 @@ RUN dnf -y update && \
     unzip /tmp/hoverfly.zip -d /tmp/hoverfly && \
     mv /tmp/hoverfly/hoverctl /usr/bin && \
     rm -r /tmp/hoverfly /tmp/hoverfly.zip && \
-    hoverctl targets create ocp-same-project --host http://hoverfly && \
-    hoverctl targets default ocp-same-project && \
     mkdir -m 775 $HOME && \
     chmod 775 /etc/passwd
     

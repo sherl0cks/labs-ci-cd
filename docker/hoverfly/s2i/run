@@ -21,6 +21,6 @@ if [ -v RUN_AS_WEBSERVER ]; then
     echo "running as webserver"
     hoverfly start webserver
 else
-    echo "proxy"
+    echo "running as proxy"
     hoverfly start
 fi    

@@ -19,4 +19,8 @@ ADD ./s2i /usr/libexec/s2i
 
 USER 1001
 
+RUN 
+
+EXPOSE 8500 8888
+
 CMD ["/usr/libexec/s2i/run"]
