@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -v
 
 USER_ID=$(id -u)
 GROUP_ID=$(id -g)
@@ -20,8 +19,8 @@ fi
 
 if [ -v RUN_AS_WEBSERVER ]; then
     echo "running as webserver"
-    hoverfly start webserver
+    echo "$(hoverfly start webserver)"
 else
     echo "running as proxy"
-    hoverfly start
+    echo "$(hoverfly start)"
 fi    
