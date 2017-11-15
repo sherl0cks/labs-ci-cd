@@ -1,7 +1,7 @@
 FROM fedora:latest
 
 ENV PACKAGE_LIST less unzip
-ENV HOVERFLY_DOWNLOAD_URI https://github.com/SpectoLabs/hoverfly/releases/download/v0.14.0/hoverfly_bundle_linux_amd64.zip
+ENV HOVERFLY_DOWNLOAD_URI https://github.com/SpectoLabs/hoverfly/releases/download/v0.14.2/hoverfly_bundle_linux_amd64.zip
 ENV HOME /home/hoverfly
 
 RUN dnf -y install $PACKAGE_LIST && \

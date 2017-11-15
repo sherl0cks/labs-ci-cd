@@ -19,8 +19,10 @@ fi
 
 if [ -v RUN_AS_WEBSERVER ]; then
     echo "running as webserver"
-    echo "$(hoverfly start webserver)"
+    hoverctl start webserver
 else
     echo "running as proxy"
-    echo "$(hoverfly start)"
+    hoverctl start
 fi    
+
+hoverctl logs --follow
