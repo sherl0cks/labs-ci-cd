@@ -1,6 +1,6 @@
 FROM fedora:latest
 
-ENV PACKAGE_LIST unzip
+ENV PACKAGE_LIST less unzip
 ENV HOVERFLY_DOWNLOAD_URI https://github.com/SpectoLabs/hoverfly/releases/download/v0.14.2/hoverfly_bundle_linux_amd64.zip
 ENV HOME /home/hoverfly
 
@@ -18,8 +18,6 @@ WORKDIR $HOME
 ADD ./s2i /usr/libexec/s2i
 
 USER 1001
-
-RUN 
 
 EXPOSE 8500 8888
 
