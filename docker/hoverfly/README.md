@@ -10,12 +10,15 @@ TODO create a template
 ### Running in OpenShift
 
 Build the container and deploy it in openshift:
+
 `$ oc new-app https://github.com/sherl0cks/labs-ci-cd#tool-box-zip --name=hoverfly --context-dir=docker/hoverfly`
 
 Expose the proxy/webserver port
+
 `$ oc expose svc hoverfly --port 8500`
 
 Expose the admin interface, including the rest API
+
 `$ oc expose svc hoverfly --port 8888 --name hoverfly-admin`
 
 ### Running in Docker
