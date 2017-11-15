@@ -21,15 +21,17 @@ Expose the admin interface, including the rest API
 
 `$ oc expose svc hoverfly --port 8888 --name hoverfly-admin`
 
-### Running in Docker
 
-TODO
+### Uploading Simulation Files in OpenShift
 
-### Uploading Simulation Files
-
-`$ curl -X PUT <hoverfly-proxy-webserver-route>/api/v2/simulation --upload-file <file-name>`
+`$ curl -X PUT <hoverfly-admin-route>/api/v2/simulation --upload-file <file-name>`
 
 See [the docs](https://docs.hoverfly.io/en/latest/pages/reference/api/api.html) for detail
+
+
+### Running and Uploading in Docker
+
+TODO
 
 ### Runtime Environment Variables
 
