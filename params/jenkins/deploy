@@ -1,2 +1,2 @@
-NAMESPACE=labs-ci-cd
+NAMESPACE=jenkins-42276-ci-cd
 MEMORY_LIMIT=2Gi

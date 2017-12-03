@@ -22,25 +22,13 @@ openshift_cluster_content:
   - name: jenkins-s2i
     template: "{{ inventory_dir }}/../openshift-templates/jenkins-s2i-build/template.json"
     params: "{{ inventory_dir }}/../params/jenkins/build"
-    namespace: labs-ci-cd
+    namespace: jenkins-42276-ci-cd
     tags:
     - jenkins
   - name: mvn-jenkins-slave
     template: "{{ inventory_dir }}/../openshift-templates/jenkins-slave-pod/template.json"
     params: "{{ inventory_dir }}/../params/mvn-jenkins-slave/build"
-    namespace: labs-ci-cd
-    tags:
-    - jenkins-slaves
-  - name: npm-jenkins-slave
-    template: "{{ inventory_dir }}/../openshift-templates/jenkins-slave-pod/template.json"
-    params: "{{ inventory_dir }}/../params/npm-jenkins-slave/build"
-    namespace: labs-ci-cd  
-    tags:
-    - jenkins-slaves
-  - name: zap-jenkins-slave
-    template: "{{ inventory_dir }}/../openshift-templates/jenkins-slave-pod/template.json"
-    params: "{{ inventory_dir }}/../params/zap-jenkins-slave/build"
-    namespace: labs-ci-cd
+    namespace: jenkins-42276-ci-cd
     tags:
     - jenkins-slaves
 - object: ci-cd-deployments
@@ -48,45 +36,33 @@ openshift_cluster_content:
   - name: jenkins-ephemeral
     template: openshift//jenkins-ephemeral
     params: "{{ inventory_dir }}/../params/jenkins/deploy"
-    namespace: labs-ci-cd
+    namespace: jenkins-42276-ci-cd
     tags:
     - jenkins
   - name: nexus
     template: "{{ inventory_dir }}/../openshift-templates/nexus/template.json"
     params: "{{ inventory_dir }}/../params/nexus/deploy"
-    namespace: labs-ci-cd
+    namespace: jenkins-42276-ci-cd
     tags:
-    - nexus
-  - name: sonarqube
-    template: "{{ inventory_dir }}/../openshift-templates/sonarqube/template.json"
-    params: "{{ inventory_dir }}/../params/sonarqube/build-and-deploy"
-    namespace: labs-ci-cd
-    tags:
-    - sonar
-  - name: sonarqube-postgresql
-    template: "openshift//postgresql-persistent"
-    params: "{{ inventory_dir }}/../params/sonarqube/postgresql"
-    namespace: labs-ci-cd
-    tags:
-    - sonar  
+    - nexus 
 - object: app-builds
   content:
   - name: java-app-build
     template: "{{ inventory_dir }}/../openshift-templates/s2i-app-build/template-no-secrets.json"
     params: "{{ inventory_dir }}/../params/java-app/build"    
-    namespace: labs-ci-cd
+    namespace: jenkins-42276-ci-cd
 - object: dev-stage
   content:
   - name: java-app
     template: "{{ inventory_dir }}/../openshift-templates/automation-api-hsql/template.json"
     params: "{{ inventory_dir }}/../params/java-app/deploy_dev"
-    namespace: labs-dev
+    namespace: jenkins-42276-dev
     tags:
     - java-app
   - name: fabric8-rolebinding
     template: "{{ inventory_dir }}/../openshift-templates/fabric8-role-bindings/template.json"
     params: "{{ inventory_dir }}/../params/java-app/fabric8_dev"
-    namespace: labs-dev
+    namespace: jenkins-42276-dev
     tags:
     - java-app
 - object: demo-stage
@@ -94,12 +70,12 @@ openshift_cluster_content:
   - name: java-app
     template: "{{ inventory_dir }}/../openshift-templates/automation-api-hsql/template.json"
     params: "{{ inventory_dir }}/../params/java-app/deploy_demo"
-    namespace: labs-demo
+    namespace: jenkins-42276-demo
     tags:
     - java-app
   - name: fabric8-rolebinding
     template: "{{ inventory_dir }}/../openshift-templates/fabric8-role-bindings/template.json"
     params: "{{ inventory_dir }}/../params/java-app/fabric8_demo"
-    namespace: labs-demo
+    namespace: jenkins-42276-demo
     tags:
     - java-app  

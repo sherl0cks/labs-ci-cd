@@ -1,2 +1,2 @@
-PIPELINES_NAMESPACE=labs-ci-cd
+PIPELINES_NAMESPACE=jenkins-42276-ci-cd
 NAME=java-app
