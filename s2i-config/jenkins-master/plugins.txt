@@ -4,7 +4,6 @@ ant:1.7
 authentication-tokens:1.3
 blueocean:1.2.0
 bouncycastle-api:2.16.2
-branch-api:2.0.10
 build-monitor-plugin:1.12+build.201704111018
 credentials-binding:1.13
 credentials:2.1.16
