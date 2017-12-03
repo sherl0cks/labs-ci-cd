@@ -86,7 +86,6 @@ multiple-scms:0.6
 node-iterator-api:1.5
 openshift-login:1.0.0
 openshift-pipeline:1.0.52
-openshift-sync:0.1.32
 parameterized-trigger:2.35.2
 pipeline-build-step:2.5.1
 pipeline-github-lib:1.0
