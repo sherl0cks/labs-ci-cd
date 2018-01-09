@@ -102,4 +102,12 @@ openshift_cluster_content:
     params: "{{ inventory_dir }}/../params/java-app/fabric8_demo"
     namespace: labs-demo
     tags:
-    - java-app  
+    - java-app
+- object: ci-for-labs-ci-cd
+  content:  
+  - name: pipeline
+    template: 
+    params:
+    namespace: labs-ci-cd
+    tags:
+    - ci
