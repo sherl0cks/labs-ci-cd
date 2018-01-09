@@ -109,8 +109,8 @@ openshift_cluster_content:
 - object: ci-for-labs-ci-cd
   content:  
   - name: pipeline
-    template: 
-    params:
+    template: "{{ inventory_dir }}/../openshift-templates/jenkins-pipeline-no-ocp-triggers"
+    params: "{{ inventory_dir }}/../params/ci-for-labs-ci-cd/build"
     namespace: labs-ci-cd
     tags:
     - ci

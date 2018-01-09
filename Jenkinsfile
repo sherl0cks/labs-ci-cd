@@ -1,5 +1,5 @@
-node(
-        stage( 'test')(
+node {
+        stage('test') {
                 echo('hi')
-        )
-)
+        }
+}
