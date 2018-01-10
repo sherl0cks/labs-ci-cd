@@ -4,13 +4,7 @@ node() {
         env.OCP_TOKEN = readFile('/var/run/secrets/kubernetes.io/serviceaccount/token').trim()
     }
 }
-timeout(time: 60, unit: 'SECONDS') {
-    def userInput = input(
-            id: 'userInput', message: 'Which PR # do you want to test?', parameters: [
-            [$class: 'TextParameterDefinition', description: 'git ref', name: 'ref']
-    ])
-    echo ("Env: "+userInput)
-}
+
 
 node(){
 
@@ -19,12 +13,48 @@ node(){
     }
 
     stage('Merge SCM'){
-        sh "git fetch origin pull/${userInput}/head:pr && git merge pr -ff"
+
+        sh 'git config --global user.email "robot@example.com" && git config --global user.name "A Robot"'
+
+        // timeout(time: 60, unit: 'SECONDS') {
+        //     def userInput = input(
+        //      id: 'userInput', message: 'Which PR # do you want to test?', parameters: [
+        //      [$class: 'StringParameterDefinition', description: 'PR #', name: 'pr'],
+        //      [$class: 'StringParameterDefinition', description: 'github token', name: 'token']
+        //     ])
+        //     env.PR_ID = userInput['pr']
+        //     env.PR_GITHUB_TOKEN = userInput['token']
+
+        //     echo ("${env.PR_ID} ${env.PR_GITHUB_TOKEN}")
+        // }
+
+        env.PR_GITHUB_TOKEN = 'f87853c93501738745963914d9dd1414b5d5d029'
+        env.PR_ID = 72
+        env.COMMIT_SHA = sh(returnStdout: true, script: 'cd labs-ci-cd && git rev-parse HEAD')
+
+        if (env.PR_GITHUB_TOKEN == null || env.PR_GITHUB_TOKEN == "") {
+            // skip github statusing
+        } else {
+            def json = '''\
+            {
+                "state": "pending",
+                "description": "job is running...",
+                "context": "Jenkins"
+            }'''
+
+            echo(json)
+            def uri = "https://api.github.com/repos/rht-labs/labs-ci-cd/statuses/ab9aa4877324583ad88cc41d41f66e6be04ac06e"
+            def userPass = "sherl0cks:${env.PR_GITHUB_TOKEN}"
+            sh "curl -u ${userPass} -d '${json}' -H 'Content-Type: application/json' -X POST ${uri}"
+
+        }
+
+        sh(returnStdout: true, script: "cd labs-ci-cd && git fetch origin pull/${env.PR_ID}/head:pr && git merge pr --ff")
+
     }
 
     stage('Apply Inventory'){
-        def sha = sh(returnStdout: true, script: 'cd labs-ci-cd && git rev-parse HEAD')
-        echo sha
+
     }
 
     stage('Verify Results'){
