@@ -1,0 +1,57 @@
+---
+apiVersion: v1
+kind: Template
+metadata:
+  name: ocp-project-provisioner-template
+parameters:
+  - name: "PIPELINES_NAMESPACE"
+    displayName: "Pipelines Namespace"
+    description: "Name of the namespace where the ci-cd project is (where jenkins is located)"
+    required: true
+    value: "labs-ci-cd"
+objects:
+  - apiVersion: v1
+    kind: ClusterRole
+    metadata:
+      name: ocp-project-provisioner
+    rules:
+    - apiGroups:
+      - ""
+      attributeRestrictions: null
+      resources:
+      - projectrequests
+      - resourcequotas
+      - limitranges
+      verbs:
+      - create
+      - update
+      - get
+    - apiGroups:
+      - ""
+      attributeRestrictions: null
+      resources:
+      - namespaces
+      verbs:
+      - patch
+      - update
+      - list
+    - apiGroups:
+      - ""
+      attributeRestrictions: null
+      resources:
+      - projects
+      verbs:
+      - get
+  - apiVersion: v1
+    groupNames: null
+    kind: ClusterRoleBinding
+    metadata:
+      creationTimestamp: null
+      name: ocp-project-provisioner
+    roleRef:
+      name: ocp-project-provisioner
+    subjects:
+    - kind: ServiceAccount
+      name: jenkins
+    userNames:
+    - system:serviceaccount:${PIPELINES_NAMESPACE}:jenkins

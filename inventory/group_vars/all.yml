@@ -46,6 +46,13 @@ openshift_cluster_content:
     namespace: labs-ci-cd
     tags:
     - jenkins-slaves
+  - name: jenkins-slave-ansible
+    template: "{{ inventory_dir }}/../openshift-templates/jenkins-slave-pod/template.json"
+    params: "{{ inventory_dir }}/../params/jenkins-slave-ansible/build"
+    namespace: labs-ci-cd
+    tags:
+      - jenkins-slaves
+      - ansible-slave
 - object: ci-cd-deployments
   content:
   - name: jenkins-ephemeral
@@ -106,11 +113,11 @@ openshift_cluster_content:
     namespace: labs-demo
     tags:
     - java-app
-- object: ci-for-labs-ci-cd
-  content:  
-  - name: pipeline
-    template: "{{ inventory_dir }}/../openshift-templates/jenkins-pipeline-no-ocp-triggers"
-    params: "{{ inventory_dir }}/../params/ci-for-labs-ci-cd/build"
-    namespace: labs-ci-cd
-    tags:
-    - ci
+#- object: ci-for-labs-ci-cd
+#  content:
+#  - name: pipeline
+#    template: "{{ inventory_dir }}/../openshift-templates/jenkins-pipeline-no-ocp-triggers"
+#    params: "{{ inventory_dir }}/../params/ci-for-labs-ci-cd/build"
+#    namespace: labs-ci-cd
+#    tags:
+#    - ci
