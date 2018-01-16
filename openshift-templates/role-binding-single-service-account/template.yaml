@@ -1,0 +1,29 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  name: jenkins-pipeline-no-ocp-triggers
+objects:
+  apiVersion: v1
+  kind: RoleBinding
+  roleRef:
+    name: ${SERVICE_ACCOUNT_ROLE}
+  subjects:
+  - kind: ServiceAccount
+    name: ${SERVICE_ACCOUNT_NAME}
+    namespace: ${SERVICE_ACCOUNT_NAMESPACE}
+  userNames:
+  - system:serviceaccount:${SERVICE_ACCOUNT_NAMESPACE}:${SERVICE_ACCOUNT_NAME}
+parameters:
+- name: SERVICE_ACCOUNT_NAME
+  displayName: ServiceAccount Name
+  description: The name of the ServiceAccount
+  required: true
+- name: SERVICE_ACCOUNT_NAMESPACE
+  displayName: ServiceAccount Namespace
+  description: The namespace where the ServiceAccount is defined
+  required: true
+- name: SERVICE_ACCOUNT_ROLE
+  displayName: ServiceAccount Role
+  description: The role to bind to the ServiceAccount
+  required: true

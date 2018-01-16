@@ -5,29 +5,37 @@ node() {
             env.OCP_TOKEN = readFile('/var/run/secrets/kubernetes.io/serviceaccount/token').trim()
         }
 
-        stage('Checkout SCM') {
-            sh 'rm -rf labs-ci-cd && git clone https://github.com/rht-labs/labs-ci-cd'
-        }
-
         node('jenkins-slave-ansible') {
-            stage('Merge SCM') {
 
+            stage('Merge PR') {
 
                 sh '''
+                    git clone https://github.com/rht-labs/labs-ci-cd
                     git config --global user.email "robot@example.com"
-                    git config --global user.name "A Robot"'
+                    git config --global user.name "A Robot"
                 '''
 
                 timeout(time: 60, unit: 'SECONDS') {
                     def userInput = input(
                             id: 'userInput', message: 'Which PR # do you want to test?', parameters: [
                             [$class: 'StringParameterDefinition', description: 'PR #', name: 'pr'],
-                            [$class: 'StringParameterDefinition', description: 'github token', name: 'token']
+                            [$class: 'StringParameterDefinition', description: 'github token', name: 'token'],
+                            [$class: 'StringParameterDefinition', description: 'github user name', name: 'username']
                     ])
                     env.PR_ID = userInput['pr']
                     env.PR_GITHUB_TOKEN = userInput['token']
+                    env.PR_GITHUB_USERNAME = userInput['username']
 
-                    echo("${env.PR_ID} ${env.PR_GITHUB_TOKEN}")
+
+                    if (env.PR_ID == null || env.PR_ID == ""){
+                        error('PR_ID cannot be null or empty')
+                    }
+                    if (env.PR_GITHUB_TOKEN == null || env.PR_GITHUB_TOKEN == ""){
+                        error('PR_GITHUB_TOKEN cannot be null or empty')
+                    }
+                    if (env.PR_GITHUB_USERNAME == null || env.PR_GITHUB_USERNAME == ""){
+                        error('PR_GITHUB_USERNAME cannot be null or empty')
+                    }
                 }
 
                 dir('labs-ci-cd') {
@@ -40,41 +48,42 @@ node() {
 
                     // set the vars
                     env.COMMIT_SHA = sh(returnStdout: true, script: getCommitShaScript)
-                    env.USER_PASS = "sherl0cks:${env.PR_GITHUB_TOKEN}"
+                    env.USER_PASS = "${env.PR_GITHUB_USERNAME}:${env.PR_GITHUB_TOKEN}"
                     env.PR_STATUS_URI = "https://api.github.com/repos/rht-labs/labs-ci-cd/statuses/${env.COMMIT_SHA}"
 
 
-                    String mergePrIntoMasterScript = """
+                    def json = '''
+                        {
+                            "state": "pending",
+                            "description": "job is running...",
+                            "context": "Jenkins"
+                        }
+                    '''
+
+                    sh "curl -u ${env.USER_PASS} -d '${json}' -H 'Content-Type: application/json' -X POST ${env.PR_STATUS_URI}"
+
+
+                    sh """
                         git checkout master
                         git fetch origin pull/${env.PR_ID}/head:pr
                         git merge pr --ff
                     """
-
-                    sh(returnStdout: true, script: mergePrIntoMasterScript)
-
                 }
 
-                if (env.PR_GITHUB_TOKEN == null || env.PR_GITHUB_TOKEN == "") {
-                    // skip github statusing
-                } else {
-                    def json = '''\
-                    {
-                        "state": "pending",
-                        "description": "job is running...",
-                        "context": "Jenkins"
-                    }'''
 
-                    sh "curl -u ${env.USER_PASS} -d '${json}' -H 'Content-Type: application/json' -X POST ${env.PR_STATUS_URI}"
-
-                }
             }
 
             stage('Apply Inventory') {
                 dir('labs-ci-cd'){
                     sh '''
                         ansible-galaxy install -r requirements.yml --roles-path=roles
-                        ansible-playbook roles/casl-ansible/playbooks/openshift-cluster-seed.yml -i inventory/
+                        git clone https://github.com/rht-labs/labs-demo
+                        mv labs-demo/roles/make-demo-unique roles
+                        rm -rf labs-demo
+                        cp -r roles/casl-ansible/roles/* roles/
+                        ls roles/
                     '''
+                    sh 'ansible-playbook ci-playbook.yaml -i inventory/'
                 }
             }
 
@@ -90,7 +99,7 @@ node() {
                                     apiURL: "${env.OCP_API_SERVER}",
                                     authToken: "${env.OCP_TOKEN}",
                                     buildConfig: build,
-                                    namespace: "labs-ci-cd",
+                                    namespace: "labs-ci-cd-pr",
                                     waitTime: '10',
                                     waitUnit: 'min'
                             )
@@ -104,7 +113,7 @@ node() {
                                     apiURL: "${env.OCP_API_SERVER}",
                                     authToken: "${env.OCP_TOKEN}",
                                     depCfg: deploy,
-                                    namespace: "labs-ci-cd",
+                                    namespace: "labs-ci-cd-pr",
                                     verifyReplicaCount: true,
                                     waitTime: '10',
                                     waitUnit: 'min'
@@ -119,7 +128,7 @@ node() {
                                     apiURL: "${env.OCP_API_SERVER}",
                                     authToken: "${env.OCP_TOKEN}",
                                     depCfg: app,
-                                    namespace: "labs-dev",
+                                    namespace: "labs-dev-pr",
                                     verifyReplicaCount: true,
                                     waitTime: '10',
                                     waitUnit: 'min'
@@ -142,7 +151,9 @@ node() {
     catch (e){
 
         if (env.USER_PASS == null || env.USER_PASS == ""){
-            error("The PR # you entered (${env.PR_ID}) was bad and the job failed. Please double check the github issue ID")
+            // error("The PR # you entered (${env.PR_ID}) was bad and the job failed. Please double check the github issue ID")
+
+            throw e
         } else {
             def json = '''\
         {
