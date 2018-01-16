@@ -15,7 +15,7 @@ node() {
                     git config --global user.name "A Robot"
                 '''
 
-                timeout(time: 60, unit: 'SECONDS') {
+                timeout(time: 1, unit: 'HOURS') {
                     def userInput = input(
                             id: 'userInput', message: 'Which PR # do you want to test?', parameters: [
                             [$class: 'StringParameterDefinition', description: 'PR #', name: 'pr'],
@@ -148,24 +148,21 @@ node() {
         }
 
     }
-    catch (e){
+    catch (e) {
 
-        if (env.USER_PASS == null || env.USER_PASS == ""){
-            // error("The PR # you entered (${env.PR_ID}) was bad and the job failed. Please double check the github issue ID")
-
-            throw e
-        } else {
-            def json = '''\
+        def json = '''
         {
             "state": "failure",
             "description": "the job failed",
             "context": "Jenkins"
         }'''
 
-            sh "curl -u ${env.USER_PASS} -d '${json}' -H 'Content-Type: application/json' -X POST ${env.PR_STATUS_URI}"
+        sh "curl -u ${env.USER_PASS} -d '${json}' -H 'Content-Type: application/json' -X POST ${env.PR_STATUS_URI}"
+
+        if (e.getMessage().contains('Couldn\'t find remote ref')) {
+            error("The pull request ID ${env.PR_ID} is invalid.")
+        } else {
+            throw e
         }
-
-        throw e
-
     }
 }
