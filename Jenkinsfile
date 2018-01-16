@@ -150,18 +150,20 @@ node() {
     }
     catch (e) {
 
-        def json = '''
-        {
-            "state": "failure",
-            "description": "the job failed",
-            "context": "Jenkins"
-        }'''
-
-        sh "curl -u ${env.USER_PASS} -d '${json}' -H 'Content-Type: application/json' -X POST ${env.PR_STATUS_URI}"
-
-        if (e.getMessage().contains('Couldn\'t find remote ref')) {
+        // we don't have the info to post a status, so short circuit
+        if (env.COMMIT_SHA == null || env.COMMIT_SHA == "") {
             error("The pull request ID ${env.PR_ID} is invalid.")
         } else {
+
+            def json = '''
+            {
+                "state": "failure",
+                "description": "the job failed",
+                "context": "Jenkins"
+            }'''
+
+            sh "curl -u ${env.USER_PASS} -d '${json}' -H 'Content-Type: application/json' -X POST ${env.PR_STATUS_URI}"
+
             throw e
         }
     }
