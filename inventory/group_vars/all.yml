@@ -78,7 +78,7 @@ openshift_cluster_content:
     params: "{{ inventory_dir }}/../params/sonarqube/postgresql"
     namespace: labs-ci-cd
     tags:
-    - sonar  
+    - sonar
 - object: app-builds
   content:
   - name: java-app-build
@@ -113,11 +113,11 @@ openshift_cluster_content:
     namespace: labs-demo
     tags:
     - java-app
-#- object: ci-for-labs-ci-cd
-#  content:
-#  - name: pipeline
-#    template: "{{ inventory_dir }}/../openshift-templates/jenkins-pipeline-no-ocp-triggers"
-#    params: "{{ inventory_dir }}/../params/ci-for-labs-ci-cd/build"
-#    namespace: labs-ci-cd
-#    tags:
-#    - ci
+- object: ci-for-labs-ci-cd
+  content:
+  - name: pipeline
+    template: "{{ inventory_dir }}/../openshift-templates/jenkins-pipeline-no-ocp-triggers"
+    params: "{{ inventory_dir }}/../params/ci-for-labs-ci-cd/build"
+    namespace: labs-ci-cd
+    tags:
+    - ci

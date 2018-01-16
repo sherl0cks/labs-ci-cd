@@ -9,56 +9,75 @@ node() {
             sh 'rm -rf labs-ci-cd && git clone https://github.com/rht-labs/labs-ci-cd'
         }
 
-        stage('Merge SCM') {
+        node('jenkins-slave-ansible') {
+            stage('Merge SCM') {
 
-            sh 'git config --global user.email "robot@example.com" && git config --global user.name "A Robot"'
 
-            timeout(time: 60, unit: 'SECONDS') {
-                def userInput = input(
-                        id: 'userInput', message: 'Which PR # do you want to test?', parameters: [
-                        [$class: 'StringParameterDefinition', description: 'PR #', name: 'pr'],
-                        [$class: 'StringParameterDefinition', description: 'github token', name: 'token']
-                ])
-                env.PR_ID = userInput['pr']
-                env.PR_GITHUB_TOKEN = userInput['token']
+                sh '''
+                    git config --global user.email "robot@example.com"
+                    git config --global user.name "A Robot"'
+                '''
 
-                echo ("${env.PR_ID} ${env.PR_GITHUB_TOKEN}")
+                timeout(time: 60, unit: 'SECONDS') {
+                    def userInput = input(
+                            id: 'userInput', message: 'Which PR # do you want to test?', parameters: [
+                            [$class: 'StringParameterDefinition', description: 'PR #', name: 'pr'],
+                            [$class: 'StringParameterDefinition', description: 'github token', name: 'token']
+                    ])
+                    env.PR_ID = userInput['pr']
+                    env.PR_GITHUB_TOKEN = userInput['token']
+
+                    echo("${env.PR_ID} ${env.PR_GITHUB_TOKEN}")
+                }
+
+                dir('labs-ci-cd') {
+
+                    String getCommitShaScript = """
+                        git fetch origin pull/${env.PR_ID}/head:pr
+                        git checkout pr
+                        git rev-parse HEAD
+                    """
+
+                    // set the vars
+                    env.COMMIT_SHA = sh(returnStdout: true, script: getCommitShaScript)
+                    env.USER_PASS = "sherl0cks:${env.PR_GITHUB_TOKEN}"
+                    env.PR_STATUS_URI = "https://api.github.com/repos/rht-labs/labs-ci-cd/statuses/${env.COMMIT_SHA}"
+
+
+                    String mergePrIntoMasterScript = """
+                        git checkout master
+                        git fetch origin pull/${env.PR_ID}/head:pr
+                        git merge pr --ff
+                    """
+
+                    sh(returnStdout: true, script: mergePrIntoMasterScript)
+
+                }
+
+                if (env.PR_GITHUB_TOKEN == null || env.PR_GITHUB_TOKEN == "") {
+                    // skip github statusing
+                } else {
+                    def json = '''\
+                    {
+                        "state": "pending",
+                        "description": "job is running...",
+                        "context": "Jenkins"
+                    }'''
+
+                    sh "curl -u ${env.USER_PASS} -d '${json}' -H 'Content-Type: application/json' -X POST ${env.PR_STATUS_URI}"
+
+                }
             }
 
-            // set the vars
-            env.COMMIT_SHA = sh(returnStdout: true, script: "cd labs-ci-cd && git fetch origin pull/${env.PR_ID}/head:pr && git checkout pr && git rev-parse HEAD")
-            env.USER_PASS = "sherl0cks:${env.PR_GITHUB_TOKEN}"
-            env.PR_STATUS_URI = "https://api.github.com/repos/rht-labs/labs-ci-cd/statuses/${env.COMMIT_SHA}"
-
-            // do a merge
-            // this will also
-            sh(returnStdout: true, script: "cd labs-ci-cd && git checkout master && git fetch origin pull/${env.PR_ID}/head:pr && git merge pr --ff")
-
-
-
-            if (env.PR_GITHUB_TOKEN == null || env.PR_GITHUB_TOKEN == "") {
-                // skip github statusing
-            } else {
-                def json = '''\
-                {
-                    "state": "pending",
-                    "description": "job is running...",
-                    "context": "Jenkins"
-                }'''
-
-                sh "curl -u ${env.USER_PASS} -d '${json}' -H 'Content-Type: application/json' -X POST ${env.PR_STATUS_URI}"
-
+            stage('Apply Inventory') {
+                dir('labs-ci-cd'){
+                    sh '''
+                        ansible-galaxy install -r requirements.yml --roles-path=roles
+                        ansible-playbook roles/casl-ansible/playbooks/openshift-cluster-seed.yml -i inventory/
+                    '''
+                }
             }
 
-        }
-
-        stage('Apply Inventory') {
-            node('jenkins-slave-ansible') {
-                sh 'git config --global user.email "robot@example.com" && git config --global user.name "A Robot"'
-                sh "git clone https://github.com/rht-labs/labs-ci-cd && cd labs-ci-cd && git fetch origin pull/${env.PR_ID}/head:pr && git merge pr --ff"
-                sh(returnStdout: true, script: "cd labs-ci-cd && ansible-galaxy install -r requirements.yml --roles-path=roles")
-                sh(returnStdout: true, script: "cd labs-ci-cd && ansible-playbook roles/casl-ansible/playbooks/openshift-cluster-seed.yml -i inventory/")
-            }
         }
 
         stage('Verify Results') {
@@ -123,7 +142,7 @@ node() {
     catch (e){
 
         if (env.USER_PASS == null || env.USER_PASS == ""){
-            error("The PR # you entered was bad and the job failed. Please double check the github issue ID")
+            error("The PR # you entered (${env.PR_ID}) was bad and the job failed. Please double check the github issue ID")
         } else {
             def json = '''\
         {
