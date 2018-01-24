@@ -20,6 +20,26 @@ openshift_cluster_content:
     params: "{{ inventory_dir }}/../params/projectrequests/demo"
     tags:
     - projects
+- object: projectrequest
+  content:
+  - name: rolebinding-ci-cd
+    template: "{{ inventory_dir }}/../openshift-templates/group-rolebinding/template.yaml"
+    params: "{{ inventory_dir }}/../params/rolebinding/contributors"
+    namespace: labs-ci-cd
+    tags:
+    - rolebindings
+  - name: rolebinding-dev
+    template: "{{ inventory_dir }}/../openshift-templates/group-rolebinding/template.yaml"
+    params: "{{ inventory_dir }}/../params/rolebinding/contributors"
+    namespace: labs-dev
+    tags:
+    - rolebindings 
+  - name: rolebinding-demo
+    template: "{{ inventory_dir }}/../openshift-templates/group-rolebinding/template.yaml"
+    params: "{{ inventory_dir }}/../params/rolebinding/contributors"
+    namespace: labs-demo
+    tags:
+    - rolebindings 
 - object: ci-cd-builds
   content:
   - name: jenkins-s2i

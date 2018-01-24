@@ -90,7 +90,7 @@ node() {
                         cp -r roles/casl-ansible/roles/* roles/
                         ls roles/
                     '''
-                    sh "ansible-playbook ci-playbook.yaml -i inventory/ -e \"scm_ref=pr-${env.PR_ID}\""
+                    sh "ansible-playbook ci-playbook.yaml -i inventory/ -e \"scm_ref=pr-${env.PR_ID}\" demo_projectname=pr-${env.PR_ID}\"
                 }
             }
 
