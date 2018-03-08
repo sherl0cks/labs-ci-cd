@@ -10,5 +10,5 @@
       - regexp: '(SOURCE_REPOSITORY_URL)=(https:\/\/github\.com\/rht-labs\/labs-ci-cd.*)((\n.*)+)(SOURCE_REPOSITORY_REF)=(.*)'
         replace: '\1={{ scm_url }}\3\5={{ scm_ref }}'
   roles:
-    - make-projects-unique
+    - casl-ansible/roles/make-applier-projects-unique
     - casl-ansible/roles/openshift-applier
