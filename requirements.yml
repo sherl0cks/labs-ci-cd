@@ -2,7 +2,7 @@
 # to support the operation of CASL provisioning/runs. 
 
 # From 'casl-ansible'
-- src: https://github.com/sherl0cks/casl-ansible
+- src: https://github.com/rht-labs/casl-ansible
   scm: git
-  version: unique-galaxy
+  version: v3.7.1
   name: casl-ansible
